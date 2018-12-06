@@ -1,11 +1,11 @@
 \section{Testing}												
 \label{sec:Testing}
-In iterative and incremental development, testing is conducted during each increment after its implementation phase. So after the implementation of functional requirements, we began to test all the functions. Functional requirements like LoadImage and ExistSystem
-are tested by manually observation. But extraction functionalities are not easily tested. To test extraction functionalities, we need thousands of actual forms from the Admission Office. We do not presently have access to actual forms due to privacy issues, therefore, we have collected a few dozen forms that were filled out with simulated information for testing extraction functionalities.We cannot determine the accuracy of the system since we do not yet have accessed to a image set of actual student information cards. Figure 19 and Figure 20 are two test examples:
+\paragraph{} Because we chose an incremental model as a life cycle model so the most testing is done during each increment after its implementation phase. So when everything was implemented, the developer then tested the entire application.
+\par Next came the GUI, without any data connections. After the GUI was developed and wired up, the programmer tested to ensure that each button caused the correct action and that no data could be saved with missing or invalid entries.
 
-\subsection{Point 1}
-This subsection gives a great deal of precise description supporting point 1.  
+\par After GUI development came the object classes. The classes were tested as they were designed in the design phase. After they were all fully written, unit tests were created to check the error handling and functionality of each method in each class.
 
+\par The web interface was mainly used to retrieve data and show it on the user interface. So we can just test it by manual observation. Figure shows the web user interface and database pair.
 
-\subsection{Point 2}
-This gives Point 2
+\par But image recognition related functionalities for Android application are not easily tested. To make sure the region we found was correct, we took different images of actual scenery and saw if the object found is what had been sent before. We cannot determine the accuracy of the system since we do not yet have access to a image set of actual student information cards. Figure and Figure are two test examples: 
+
