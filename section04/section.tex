@@ -1,14 +1,13 @@
 \section{Implementation}												
 \label{sec:Implementation}
-\lstset{numbers=left, breaklines=true,frame=shadowbox,
-} 
 
 \paragraph{}For the Android application, Android and Java were chosen as the primary programming languages due to the developer's familiarity with them. For the web interface, JSP was chosen as the background language. JavaScript and HTML were chosen to take care of the front-end and user interface. Ajax is also used to talk to the database. 
 
 \subsection{Database Operations}
 \label{subsec:DatabaseOperations}
 \paragraph{}As what we mentioned in the design section, the Bmob online database was chosen for the database management system (DBMS) for both the Android application and the web interface. To use this database, we need an entity class to match each form. The entity class will extends BmobObject and the class name must be the same as the form name. As shown below:
-\begin{lstlisting}[language=JAVA] 
+\begin{lstlisting}[language={java},
+        numbers=left,basicstyle=\small\ttfamily]
 public class Friend extends BmobObject {
     private String user;
     private String friend;
@@ -45,14 +44,14 @@ Bmob.initialize(this, "Your Application ID");
 \end{lstlisting} 
 \end{enumerate}
 \par After initialization is finished. We can get access to the database like this:
-\begin{lstlisting}[language=JAVA] 
+\begin{lstlisting}[language={java},
+        numbers=left,basicstyle=\small\ttfamily]
 BmobQuery<User> query = new BmobQuery<>();
 query.addWhereEqualTo("username", username);
 query.findObjects(new FindListener<User>() {
     @Override
     public void done(List<User> users, BmobException e) {
         if(e == null){
-            System.out.println("EditProfile: query success");
             saveProfile(users.get(0),newPassword);
         }else{
             Log.i("bmob","failed："+e.getMessage()+","+
@@ -67,7 +66,8 @@ query.findObjects(new FindListener<User>() {
 
 \subsubsection{Gift Transformation}
 \paragraph{} Gift transformation is applies a perspective transformation of one image to another image. For perspective transformation, we need a 3x3 transformation matrix. Straight lines will remain straight even after the transformation. To find this transformation matrix, we need four points on the gift image which will be the four corners of the gift image and corresponding points on the background image. The corresponding points will be the four corners of the user selected region.  Among these four points, three of them should not be collinear. Then transformation matrix can be found by the function getPerspectiveTransform at Line 15. Then use the warpPerspective function at Line 16  to apply transformation with this 3x3 transformation matrix. The code below is the method used to apply transformation, drawable is the gift image, region is the background image, points contains the four corners user selected.
-\begin{lstlisting}[language=JAVA] 
+\begin{lstlisting}[language={java},
+        numbers=left,basicstyle=\small\ttfamily,breaklines=true]
 public Mat getThansform(Mat drawable, Mat region, int[] points) {
     Mat drawableCorner = new Mat(4, 1, CvType.CV_32FC2);
     Mat drawableTransformCorner = new Mat(4, 1, CvType.CV_32FC2);
@@ -76,11 +76,10 @@ public Mat getThansform(Mat drawable, Mat region, int[] points) {
     drawableCorner.put(1, 0, new double[]{drawable.cols(), 0.0});
     drawableCorner.put(2, 0, new double[]{drawable.cols(), drawable.rows()});
     drawableCorner.put(3, 0, new double[]{0.0, drawable.rows()});
-
-    drawableTransformCorner.put(0, 0, new double[]{points[0], points[1]});
-    drawableTransformCorner.put(1, 0, new double[]{points[2], points[3]});
-    drawableTransformCorner.put(2, 0, new double[]{points[4], points[5]});
-    drawableTransformCorner.put(3, 0, new double[]{points[6], points[7]});
+    
+    for(int i=0; i<4; i++){
+        drawableTransformCorner.put(i, 0, new double[]{points[i*2], points[i*2+1]});
+    }
 
     Mat perspectiveTransform = Imgproc.getPerspectiveTransform(drawableCorner, drawableTransformCorner);
     Imgproc.warpPerspective(drawable,region,perspectiveTransform, region.size(), Imgproc.INTER_LINEAR,
@@ -90,23 +89,27 @@ public Mat getThansform(Mat drawable, Mat region, int[] points) {
 }
 \end{lstlisting} 
 \subsubsection{Region Recognition}
-\paragraph{}Image recognition is more complex, we used 'Features2D' and 'Homography' in OpenCv to find a known object in a real time camera capture frame. The steps and corresponding code are listed below:
+\paragraph{}Image recognition is more complex, we used 'Features2D' and 'Homography' in OpenCv to find a known object in a real time camera capture frame. 'Features2D' and 'Homography' are all come from the third party library, OpenCV. OpenCV is a cross-platform library using which we can develop real-time computer vision applications. It mainly focuses on image processing, video capture and analysis including features like face detection and object detection. For this project we mainly use the 'Features2D' class to find keypoints and matches. Then use 'Homography' to determine the object.
+\par Before we begin to detect image features. We need to have a pre-process to call the camera so that we can get each frame to do the compare. This will be introduced in Section \ref{CallCamera} Call Camera. The steps and corresponding code to recognize region are listed below:
 \begin{enumerate}
-\item[1)] Detect the keypoints using AKAZE Detector. This piece of code put the ProcessedCamera image keypoints in cameraKeypoints.
-\begin{lstlisting}[language=JAVA] 
+\item[1)] Detect the keypoints using AKAZE Detector. AKAZE is a a novel and fast multiscale feature detection and description approach that exploits the benefits of nonlinear scale spaces.\cite{alcantarilla2011fast} This piece of code put the ProcessedCamera image keypoints into cameraKeypoints. 'FeatureDetector' is a OpenCv class used to generate different feature detectors. 'MatOfKeyPoint' is a matrix used to save keypoints.
+\begin{lstlisting}[language={java},
+        numbers=left,basicstyle=\small\ttfamily,breaklines=true]
 FeatureDetector featureDetector = FeatureDetector.create(FeatureDetector.AKAZE);
 MatOfKeyPoint cameraKeypoints = new MatOfKeyPoint();
 Imgproc.cvtColor(processedCamera, processedCamera, Imgproc.COLOR_RGBA2RGB);
 featureDetector.detect(processedCamera, cameraKeypoints);
 \end{lstlisting} 
-\item[2)] Calculate descriptors (feature vectors). We get cameraDescriptor for processedCamera here.
-\begin{lstlisting}[language=JAVA] 
+\item[2)] Calculate descriptors (feature vectors). We get cameraDescriptor for processedCamera here. According to an extensive evaluation based on the standard Oxford benchmark \cite{mikolajczyk2005} that shows the excellent compromise between speed and performance of our approach compared to state-of-the-art methods such as BRISK, ORB, SURF, SIFT and KAZE. While A-KAZE is more expensive to compute than BRISK and ORB, it is faster than SURF, SIFT and KAZE.\cite{alcantarilla2011fast}
+\begin{lstlisting}[language={java},
+        numbers=left,basicstyle=\small\ttfamily,breaklines=true]
 DescriptorExtractor extractor = DescriptorExtractor.create(DescriptorExtractor.AKAZE);
 Mat cameraDescriptor = new Mat();
 extractor.compute(processedCamera, cameraKeypoints, cameraDescriptor);
 \end{lstlisting} 
 \item[3)] Matching descriptor vectors using 'BRUTEFORCE\_HAMMING' matcher and only save 'good' matches, the smaller distance means better match and here we only get the first half matches. 
-\begin{lstlisting}[language=JAVA] 
+\begin{lstlisting}[language={java},
+        numbers=left,basicstyle=\small\ttfamily,breaklines=true]
 MatOfDMatch matches = new MatOfDMatch();
 DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_HAMMING);
 matcher.match(cameraDescriptor, giftDescriptor, matches);
@@ -114,41 +117,71 @@ matcher.match(cameraDescriptor, giftDescriptor, matches);
 List<DMatch> bestMatchesList = mats.stream().filter( m -> (m.distance - MIN_DIST) < .5 * range)
                     .collect(Collectors.toList());
 \end{lstlisting} 
-\item[4)] Get the keypoints from the 'good' matches.
-\begin{lstlisting}[language=JAVA] 
- for(int i=0; i<bestMatchesList.size(); i++){
-    objectPoints.addLast(templateKeyPointList.get(bestMatchesList.get(i).trainIdx).pt);
-    scenePoints.addLast(originalKeyPointList.get(bestMatchesList.get(i).queryIdx).pt);
-}
+\item[4)] Get the keypoints from the 'good' matches. 'bestMatchesList' is a List of 'DMatch'. 'DMatch' is a data type used to save a match in OpenCv and each 'DMatch' will have the following attributes:
+\begin{itemize}
+\item distance: This attribute gives us the distance between the descriptors. A lower distance indicates a better match.
+\item trainIdx: This attribute gives us the index of the descriptor in the list of train descriptors (in our case, it’s the list of descriptors in the gift images).
+\item queryIdx: This attribute gives us the index of the descriptor in the list of query descriptors (in our case, it’s the list of descriptors in the camera capture images).
+\item imgIdx: This attribute gives us the index of the train image. 
+\end{itemize}
+\paragraph{} In our case, we just need first three attributes. The following code shows how we save keypoints into a LinkedList, 'objectPoints' will save the gift image keypoints and 'scenePoints' will save the camera capture images keypoints. After we get the keypoints, we will use these keypoints to generate the 'homography'. The 'findHomography' method will find a perspective transformation between two planes. The four parameters used in this method are:
+\begin{itemize}
+\item srcPoints: Coordinates of the points in the original plane, a matrix of the type CV\_32FC2 or vector\textless Point2f\textgreater.(in our case,it's objMatOfPoint2f which comes from gift images)
+\item dstPoints: Coordinates of the points in the target plane, a matrix of the type CV\_32FC2 or a vector\textless Point2f\textgreater .(in our case,it's scnMatOfPoint2f which comes from camera capture images)
+\item method: Method used to computed a homography matrix.(There are three methods are supported, we used RANSAC-based robust method here)
+\item ransacReprojThreshold: Maximum allowed reprojection error to treat a point pair as an inlier (used in the RANSAC method only). If srcPoints and dstPoints are measured in pixels, it usually makes sense to set this parameter somewhere in the range of 1 to 10.(in our case, it's three)
+\end{itemize}
+
+\begin{lstlisting}[language={java},
+        numbers=left,basicstyle=\small\ttfamily,breaklines=true] 
+List<KeyPoint> templateKeyPointList = giftKeypoints.toList();
+List<KeyPoint> originalKeyPointList = cameraKeypoints.toList();
+LinkedList<Point> objectPoints = new LinkedList();
+LinkedList<Point> scenePoints = new LinkedList();
+    for(int i=0; i<bestMatchesList.size(); i++){
+        objectPoints.addLast(templateKeyPointList.get(bestMatchesList.get(i).trainIdx).pt);
+        scenePoints.addLast(originalKeyPointList.get(bestMatchesList.get(i).queryIdx).pt);
+    }
+MatOfPoint2f objMatOfPoint2f = new MatOfPoint2f();
+objMatOfPoint2f.fromList(objectPoints);
+MatOfPoint2f scnMatOfPoint2f = new MatOfPoint2f();
+scnMatOfPoint2f.fromList(scenePoints);
+Mat homography = Calib3d.findHomography(objMatOfPoint2f, scnMatOfPoint2f, Calib3d.RANSAC, 3);
 \end{lstlisting} 
-\item[5)] Get the four corners from the selected region. Here we use a Mat with one column four rows to save the points. points is an array of String with user selected region information.
-\begin{lstlisting}[language=JAVA] 
+\item[5)] Put the four corners from the selected region into the template image, in our case, the gift image. Here we use a Mat with one column four rows to record the points. The 'points' is an array of String with user selected region information retrieved from database, and then, use perspectiveTransform method which performs the perspective matrix transformation of vectors. There are three attributes for this method: 
+\begin{itemize}
+\item src: Input two-channel or three-channel floating-point array; each element is a 2D/3D vector to be transformed. (in our case, it's templateCorners which comes from gift image.)
+\item dst: Output array of the same size and type as src.(in our case, it's templateTransformResult which will save detected corners)
+\item m – 3x3 or 4x4 floating-point transformation matrix.(in our case, it's the homography we generated in last step)
+\end{itemize}
+\paragraph{} After these operations, four corners will be detected to localize the object. The four detected corners of region is now saved in templateTransformResult.
+\begin{lstlisting}[language={java},
+        numbers=left,basicstyle=\small\ttfamily,breaklines=true]
 Mat templateCorners = new Mat(4, 1, CvType.CV_32FC2);
-templateCorners.put(0, 0, new double[]{points[0], points[1]});
-templateCorners.put(1, 0, new double[]{points[2], points[3]});
-templateCorners.put(2, 0, new double[]{points[4], points[5]});
-templateCorners.put(3, 0, new double[]{points[6], points[7]});
-\end{lstlisting} 
-\item[6)] Use perspectiveTransform method to localize the object. The four detected corners of region is now saved in templateTransformResult.
-\begin{lstlisting}[language=JAVA] 
+Mat templateTransformResult = new Mat(4, 1, CvType.CV_32FC2);
+for(int i=0; i<4; i++){
+    templateCorners.put(i, 0, new double[]{points[i*2], points[i*2+1]});
+}
 Core.perspectiveTransform(templateCorners, templateTransformResult, homography);
 \end{lstlisting} 
+\end{enumerate}
+\par When we first finish these code above, we find out several conditions can be optimized and we tried to add some factors to constrain the object detected. We put two images in a line and use four-sided shapes to draw both the region selected by user and region detected by the algorithm, after thousands of different scenery testing, manually observation, the factors used to optimize the region are listed below:
+\begin{enumerate}
+\item[1)] If one of the four corners detected is out of the image bound, that result will be abandoned. 
+\item[2)] In case an object matches a very small picture which is not the same, for example, a white board with some lines on it matches a tiny white dot, we add a radio to control the detected object's size which is the aspect ratio of detected region must greater than or equal to point five times the aspect ratio of selected region and the aspect ratio of detected region must less than or equal to two times the aspect ratio of selected region.
+\item[3)] The third factor we used is the value of the number of keypoints not in selected region divided by the number of keypoints in detected region and both keypoints get from the matches. The smaller factor means a better result. After testing, we decided only want the result which this factor is less than point three. This factor helps to localize the object.
 \end{enumerate}
 
 \subsection{Android Application}
 \subsubsection{Usage of Adapter}
 \paragraph{}
-An Adapter object acts as a bridge between an AdapterView (e.g. ListView, Spinner, and GridView) and the underlying data for that view. The Adapter provides access to the data items. The Adapter is also responsible for making a View for each item in the data set. For this project, ListView is used to show friends list and gifts list shown in Figure \ref{FriendsListUI} Friends List page and Figure \ref{GiftsListUI} Gifts List page. GridView is used to show the gifts selection after users choose a region. Figure \ref{AdapterOverview} shows a overview of adapter.
-\begin{figure}[htb]
-\centering
-\includegraphics[width=.7\textwidth]{section04/assets/AdapterOverview.png}
-\caption[Short Caption]{\label{AdapterOverview}Overview of Adapter}
-\end{figure}
+An Adapter object acts as a bridge between an AdapterView (e.g. ListView, Spinner, and GridView) and the underlying data for that view. The Adapter provides access to the data items. The Adapter is also responsible for making a View for each item in the data set. For this project, ListView is used to show friends list and gifts list shown in Figure \ref{FriendsListUI} Friends List page and Figure \ref{GiftsListUI} Gifts List page. GridView is used to show the gifts selection after users choose a region. 
 
 \subsubsection{Get system permissions}
 \label{subsubsec:GetSystemPermissions}
 \paragraph{} As mentioned in Section \ref{subsec:DatabaseOperations} Database Operations, we need to configure AndroidManifest.xml file. This file is used to declare an application component and declare the permissions that the application needs. As shown below, Line 1 is used to get the internet permission, Line 2 is used to get the external storage permission, and Line 3 is needed to create BmobInstallation. Line 4 is to acquire the system camera permission, we will need this when users send a gift and when users find a gift. Line 5 is used to get user locations. Android offers two location permissions: ACCESS\_COARSE\_LOCATION and ACCESS\_FINE\_LOCATION. The permission you choose determines the accuracy of the location returned by the API. If you specify ACCESS\_COARSE\_LOCATION, the API returns a location with an accuracy approximately equivalent to a city block. However, 'ACCESS\_FINE\_LOCATION' allows an app to access precise location.
-\begin{lstlisting}[language=JAVA] 
+\begin{lstlisting}[language={java},
+        numbers=left,basicstyle=\small\ttfamily,breaklines=true] 
 <uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 <uses-permission android:name="android.permission.READ_PHONE_STATE" />
@@ -156,7 +189,8 @@ An Adapter object acts as a bridge between an AdapterView (e.g. ListView, Spinne
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 \end{lstlisting} 
 \par The other usage of this file is define an Activity, the code below shows an example. In this example, the Acitivity is named 'SignInActivity' and it is a launcher for this application.
-\begin{lstlisting}[language=JAVA] 
+\begin{lstlisting}[language={java},
+        numbers=left,basicstyle=\small\ttfamily,breaklines=true] 
 <activity
     android:name=".SignInActivity"
     android:label="@string/title_activity_sign_in">
@@ -168,15 +202,17 @@ An Adapter object acts as a bridge between an AdapterView (e.g. ListView, Spinne
 \end{lstlisting} 
 
 \subsubsection{Call Camera}
+\label{CallCamera}
 \paragraph{} The Camera is another important part in this project. There are two functions which use camera: 'Send a gift' and 'Receive a gift'.
-Other than get user permissions mentioned in section \ref{subsubsec:GetSystemPermissions} Get System Permissions, this chunk of code shows an example of calling the system camera. Line 2 to Line 8 creates a file in storage. Line 12 called the system camera and Line 20 saved the picture into the system album. In Line 15 we have a check for sdk version, that is because if the targetSdkVersion >= 24, then we have to use FileProvider class to give access to the particular file or folder to make them accessible for other apps. FileProvider is a special subclass of ContentProvider that facilitates secure sharing of files associated with an app by creating a 'content:// Uri' for a file instead of a 'file:/// Uri'. A content URI allows you to grant reading and writing access using temporary access permissions. 
-\begin{lstlisting}[language=JAVA] 
+For 'Send a gift' we used system camera. Other than get user permissions mentioned in section \ref{subsubsec:GetSystemPermissions} Get System Permissions, this chunk of code shows an example of calling the system camera. Line 2 to Line 8 creates a file in storage. Line 12 called the system camera and Line 20 saved the picture into the system album. In Line 15 we have a check for sdk version, that is because if the targetSdkVersion >= 24, then we have to use FileProvider class to give access to the particular file or folder to make them accessible for other apps. FileProvider is a special subclass of ContentProvider that facilitates secure sharing of files associated with an app by creating a 'content:// Uri' for a file instead of a 'file:/// Uri'. A content URI allows you to grant reading and writing access using temporary access permissions. 
+\begin{lstlisting}[language={java},
+        numbers=left,basicstyle=\small\ttfamily,breaklines=true] 
 private void sendMessage() {
     File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
             Environment.DIRECTORY_PICTURES), "giftbox");
     if (!mediaStorageDir.exists()) {
         if (!mediaStorageDir.mkdirs()) {
-            Log.d("MyCameraApp", "failed to create directory");
+            Log.d("GiftBox", "failed to create directory");
         }
     }
     String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -194,4 +230,87 @@ private void sendMessage() {
     startActivityForResult(intent, 0);
 }
 \end{lstlisting} 
-\par After this we will be able to get the result in onActivityResult method.
+\par After this we will be able to get the result in onActivityResult method. For 'Receive a gift' we use OpenCv to manage the real-time image processing. Other than what we did to get system camera, the extra steps are shown below:
+\begin{enumerate}
+\item[1)] Extends CvCameraViewListener2 interface in order to use Java API in OpenCv to get the camera preview. There are three methods need to be implemented: onCameraViewStarted, onCameraViewStopped and onCameraFrame. All the important image processing process will be done in onCameraFrame. In our case, this is the place we finish the region recognition.
+\item[2)] Add components that display camera content to the interface layout file. Here we will need JavaCameraView to get and display the preview. opencv:show\_fps="true" and opencv:camera\_id="any" options enable FPS message and allow to use any camera on device. Application tries to use back camera first.The following code shows how to do it.
+\begin{lstlisting}[language={java},
+        numbers=left,basicstyle=\small\ttfamily,breaklines=true] 
+<org.opencv.android.JavaCameraView
+    android:id="@+id/camera_view"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    opencv:camera_id="any"
+    opencv:show_fps="true" />
+\end{lstlisting}
+\item[3)] Declare a CameraBridgeViewBase object to hold the JavaCameraView component in layout file and implement binding and add event listener in OnCreate method. OnCreate method is where we used to initialize the activity.
+\begin{lstlisting}[language={java},
+        numbers=left,basicstyle=\small\ttfamily,breaklines=true] 
+CameraBridgeViewBase mCVCamera;
+mCVCamera = (CameraBridgeViewBase) findViewById(R.id.camera_view);
+mCVCamera.setCvCameraViewListener(this);
+\end{lstlisting}
+\item[4)] Implement the functions we mentioned above. The 'onCameraViewStarted' method is used to initialize the preview images. The 'onCameraViewStopped' will release resources so that the application won't crash. The 'onCameraFrame' method will take care of all image processing, this method will be called every time camera frame refreshed. But because of the algorithm execute takes time so the project result won't be able to show every frame in the result. 'Cur\_State' is used to monitor if the image process begins. 'imageReady' is to ensure the target image is downloaded from database. 'tag' is used to check if the object has been found.
+\begin{lstlisting}[language={java},
+        numbers=left,basicstyle=\small\ttfamily,breaklines=true] 
+@Override
+public void onCameraViewStarted(int width, int height) {
+    mRgba = new Mat(height, width, CvType.CV_8UC4);
+}
+
+@Override
+public void onCameraViewStopped() {
+    mRgba.release();
+}
+
+@Override
+public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+    if( Cur_State  == 1 && imageReady ) {
+        if (tag){
+            this.runOnUiThread(new Runnable() {
+                public void run() {
+                    final Toast toast = Toast.makeText(thisContext, "find it!!!" , Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+            });
+        }
+        return  compareKeypoints(inputFrame);
+    } else {
+        return inputFrame.rgba();
+    }
+  }
+\end{lstlisting}
+\item[5)]In the above operation, we have already obtained the mCVCamera object in the OnCreate function. After calling mCVCamera.enableView(), the preview component will display the Mat image of each frame, but before displaying it, we must first ensure that the OpenCV library file is loaded. Completed, so calling this method requires asynchronous processing:
+\begin{lstlisting}[language={java},
+        numbers=left,basicstyle=\small\ttfamily,breaklines=true] 
+BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+        @Override
+        public void onManagerConnected(int status) {
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS:
+                    Log.i(TAG, "OpenCV loaded successfully");
+                    mCVCamera.enableView();
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
+\end{lstlisting}
+\item[6)] Because only when mLoaderCallback receives the LoaderCallbackInterface.SUCCESS message, it will open the preview display, so we need to override the Activity's onRusume method. Every time the current Activity is activated, this method will be called. so that we can check if the OpenCV library file is loaded:
+\begin{lstlisting}[language={java},
+        numbers=left,basicstyle=\small\ttfamily,breaklines=true] 
+@Override
+public void onResume() {
+    super.onResume();
+    if (!OpenCVLoader.initDebug()) {
+        Log.d(TAG, "OpenCV library not found!");
+        }else{
+        Log.d(TAG, "OpenCV library found inside package. Using it!");
+        mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
+        }
+}
+\end{lstlisting}
+\end{enumerate}
+\subsection{Summary}
+\paragraph{} In this whole project more than three thousand lines of code which includes more than twenty classes has been generated for the Android application and eight pages has been generated for the web interface. 
