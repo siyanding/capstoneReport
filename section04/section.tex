@@ -89,10 +89,10 @@ public Mat getThansform(Mat drawable, Mat region, int[] points) {
 }
 \end{lstlisting} 
 \subsubsection{Region Recognition}
-\paragraph{}Image recognition is more complex, we used 'Features2D' and 'Homography' in OpenCv to find a known object in a real time camera capture frame. 'Features2D' and 'Homography' are all come from the third party library, OpenCV. OpenCV is a cross-platform library using which we can develop real-time computer vision applications. It mainly focuses on image processing, video capture and analysis including features like face detection and object detection. For this project we mainly use the 'Features2D' class to find keypoints and matches. Then use 'Homography' to determine the object.
-\par Before we begin to detect image features. We need to have a pre-process to call the camera so that we can get each frame to do the compare. This will be introduced in Section \ref{CallCamera} Call Camera. The steps and corresponding code to recognize region are listed below:
+\paragraph{}Image recognition is more complex, we used 'Features2D' and 'Homography' in OpenCv to find a known object in a real time camera capture frame. 'Features2D' and 'Homography' are all come from the third party library, OpenCV. OpenCV is a cross-platform library which we can use to develop real-time computer vision applications. It mainly focuses on image processing, video capture and analysis including features like face detection and object detection. For this project we mainly use the 'Features2D' class to find keypoints and matches. Then use 'Homography' to determine the object.
+\par Before we begin to detect image features, we need to have a pre-process to call the camera so that we can get each frame to be compared. This will be introduced in Section \ref{CallCamera} Call Camera. The steps and corresponding code to recognize region are listed below:
 \begin{enumerate}
-\item[1)] Detect the keypoints using AKAZE Detector. AKAZE is a a novel and fast multiscale feature detection and description approach that exploits the benefits of nonlinear scale spaces.\cite{alcantarilla2011fast} This piece of code put the ProcessedCamera image keypoints into cameraKeypoints. 'FeatureDetector' is a OpenCv class used to generate different feature detectors. 'MatOfKeyPoint' is a matrix used to save keypoints.
+\item[1)] Detect the keypoints using AKAZE Detector. AKAZE is a novel and fast multiscale feature detection and description approach that exploits the benefits of nonlinear scale spaces.\cite{alcantarilla2011fast} This piece of code put the ProcessedCamera image keypoints into cameraKeypoints. 'FeatureDetector' is an OpenCv class used to generate different feature detectors. 'MatOfKeyPoint' is a matrix used to save keypoints.
 \begin{lstlisting}[language={java},
         numbers=left,basicstyle=\small\ttfamily,breaklines=true]
 FeatureDetector featureDetector = FeatureDetector.create(FeatureDetector.AKAZE);
@@ -107,7 +107,7 @@ DescriptorExtractor extractor = DescriptorExtractor.create(DescriptorExtractor.A
 Mat cameraDescriptor = new Mat();
 extractor.compute(processedCamera, cameraKeypoints, cameraDescriptor);
 \end{lstlisting} 
-\item[3)] Matching descriptor vectors using 'BRUTEFORCE\_HAMMING' matcher and only save 'good' matches, the smaller distance means better match and here we only get the first half matches. 
+\item[3)] Matching descriptor vectors using 'BRUTEFORCE\_HAMMING' matcher and only save 'good' matches, the smaller the distance the better the match and here we only use the first half of the matches. 
 \begin{lstlisting}[language={java},
         numbers=left,basicstyle=\small\ttfamily,breaklines=true]
 MatOfDMatch matches = new MatOfDMatch();
@@ -124,11 +124,11 @@ List<DMatch> bestMatchesList = mats.stream().filter( m -> (m.distance - MIN_DIST
 \item queryIdx: This attribute gives us the index of the descriptor in the list of query descriptors (in our case, it’s the list of descriptors in the camera capture images).
 \item imgIdx: This attribute gives us the index of the train image. 
 \end{itemize}
-\paragraph{} In our case, we just need first three attributes. The following code shows how we save keypoints into a LinkedList, 'objectPoints' will save the gift image keypoints and 'scenePoints' will save the camera capture images keypoints. After we get the keypoints, we will use these keypoints to generate the 'homography'. The 'findHomography' method will find a perspective transformation between two planes. The four parameters used in this method are:
+\paragraph{} In our case, we just need first three attributes. The following code shows how we save keypoints into a LinkedList, 'objectPoints' will save the gift image keypoints and 'scenePoints' will save the camera capture images keypoints. After we get the keypoints, we will use them to generate the 'homography'. The 'findHomography' method will find a perspective transformation between two planes. The four parameters used in this method are:
 \begin{itemize}
 \item srcPoints: Coordinates of the points in the original plane, a matrix of the type CV\_32FC2 or vector\textless Point2f\textgreater.(in our case,it's objMatOfPoint2f which comes from gift images)
 \item dstPoints: Coordinates of the points in the target plane, a matrix of the type CV\_32FC2 or a vector\textless Point2f\textgreater .(in our case,it's scnMatOfPoint2f which comes from camera capture images)
-\item method: Method used to computed a homography matrix.(There are three methods are supported, we used RANSAC-based robust method here)
+\item method: Method used to compute a homography matrix.(There are three supported methods, we used RANSAC-based robust method here)
 \item ransacReprojThreshold: Maximum allowed reprojection error to treat a point pair as an inlier (used in the RANSAC method only). If srcPoints and dstPoints are measured in pixels, it usually makes sense to set this parameter somewhere in the range of 1 to 10.(in our case, it's three)
 \end{itemize}
 
@@ -148,13 +148,13 @@ MatOfPoint2f scnMatOfPoint2f = new MatOfPoint2f();
 scnMatOfPoint2f.fromList(scenePoints);
 Mat homography = Calib3d.findHomography(objMatOfPoint2f, scnMatOfPoint2f, Calib3d.RANSAC, 3);
 \end{lstlisting} 
-\item[5)] Put the four corners from the selected region into the template image, in our case, the gift image. Here we use a Mat with one column four rows to record the points. The 'points' is an array of String with user selected region information retrieved from database, and then, use perspectiveTransform method which performs the perspective matrix transformation of vectors. There are three attributes for this method: 
+\item[5)] Put the four corners from the selected region into the template image, in our case, the gift image. Here we use a Mat with one column and four rows to record the points. The 'points' is an array of String with user selected region information retrieved from the database, and then, use perspectiveTransform method which performs the perspective matrix transformation of vectors. There are three attributes for this method: 
 \begin{itemize}
 \item src: Input two-channel or three-channel floating-point array; each element is a 2D/3D vector to be transformed. (in our case, it's templateCorners which comes from gift image.)
 \item dst: Output array of the same size and type as src.(in our case, it's templateTransformResult which will save detected corners)
 \item m – 3x3 or 4x4 floating-point transformation matrix.(in our case, it's the homography we generated in last step)
 \end{itemize}
-\paragraph{} After these operations, four corners will be detected to localize the object. The four detected corners of region is now saved in templateTransformResult.
+\paragraph{} After these operations, four corners will be detected to localize the object. The four detected corners of the region is now saved in templateTransformResult.
 \begin{lstlisting}[language={java},
         numbers=left,basicstyle=\small\ttfamily,breaklines=true]
 Mat templateCorners = new Mat(4, 1, CvType.CV_32FC2);
@@ -165,11 +165,11 @@ for(int i=0; i<4; i++){
 Core.perspectiveTransform(templateCorners, templateTransformResult, homography);
 \end{lstlisting} 
 \end{enumerate}
-\par When we first finish these code above, we find out several conditions can be optimized and we tried to add some factors to constrain the object detected. We put two images in a line and use four-sided shapes to draw both the region selected by user and region detected by the algorithm, after thousands of different scenery testing, manually observation, the factors used to optimize the region are listed below:
+\par When we first finished the code above, we found out several conditions that could be optimized and we tried to add some factors to constrain the object detected. We put two images in a line and use four-sided shapes to draw both the region selected by user and region detected by the algorithm, after testing thousands of different scenes and manual observation, the factors used to optimize the region are listed below:
 \begin{enumerate}
 \item[1)] If one of the four corners detected is out of the image bound, that result will be abandoned. 
-\item[2)] In case an object matches a very small picture which is not the same, for example, a white board with some lines on it matches a tiny white dot, we add a radio to control the detected object's size which is the aspect ratio of detected region must greater than or equal to point five times the aspect ratio of selected region and the aspect ratio of detected region must less than or equal to two times the aspect ratio of selected region.
-\item[3)] The third factor we used is the value of the number of keypoints not in selected region divided by the number of keypoints in detected region and both keypoints get from the matches. The smaller factor means a better result. After testing, we decided only want the result which this factor is less than point three. This factor helps to localize the object.
+\item[2)] In case an object matches a very small picture which is not the same, for example, a white board with some lines on it matches a tiny white dot, we add a radio to control the detected object's size. The aspect ratio of the detected region must be greater than or equal to point five times the aspect ratio of  the selected region and the aspect ratio of the detected region must be less than or equal to two times the aspect ratio of the selected region.
+\item[3)] The third factor we used is the value of the number of keypoints not in the selected region divided by the number of keypoints in the detected region and both keypoints get from the matches. The smaller factor means a better result. After testing, we decided we only want the result when the factor is less than point three. This factor helps to localize the object.
 \end{enumerate}
 
 \subsection{Android Application}
@@ -312,5 +312,6 @@ public void onResume() {
 }
 \end{lstlisting}
 \end{enumerate}
-\subsection{Summary}
-\paragraph{} In this whole project more than three thousand lines of code which includes more than twenty classes has been generated for the Android application and eight pages has been generated for the web interface. 
+\subsection{Conclusion}
+\paragraph{} 
+In this whole project, more than three thousand lines of code which includes more than twenty classes has been generated for the Android application and eight pages has been generated for the web interface. We also solved some problems like check the sdk version and use 'fileprovider' at proper time to avoid uri exposed exception, add different constrains to get a better detected result and when retrieve data from database, execute the code in main thread and check if data retrieve is finish to avoid asynchronous brings null pointer exceptions.   
