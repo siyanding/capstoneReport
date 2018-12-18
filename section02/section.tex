@@ -6,20 +6,21 @@
 \begin{itemize}
 \item Lack of detailed specification for the GUI.
 \item Lack of experience with image recognition.
-\item Potential misunderstanding between supervisor and developer.
+\item Potential misunderstandings between the project sponsor and the developer.
 \end{itemize}
-\par To address these factors, we determined to use an adaptive software development model. The incremental model is a method of software development where the model is designed, implemented and tested incrementally until the product is finished. 
-\par Compared to other models, this one will check the consistency between requirements in each reaction, most important functionalities are considered as and when they arrive, developers ensure that the product is partially ready with selected requirements and customers feel the progress of the development process.
-\par As a result, each partial functionality can be checked in each interaction and will be able to get feedback for developing additional requirements in the next increment. Also, if there are changes made during the development system development would be able to response to these changes rapidly.
+\par To address these factors, we determined to use an adaptive software development model. The adaptive model is a method of software development where the model is designed, implemented and tested incrementally until the product is finished. 
+\par Compared to other models, this one will check the consistency between requirements in each iteration. Developers ensure that the product is partially ready with the selected requirements and customers can see the progress of the development process. The graphical illustration of incremental prototyping model is shown in Figure \ref{IncrmentalModel}. In this figure, the ‘Conventional’ indicates waterfall model. As we can see, the developer uses the initial model as the base and keeps adding more functionalities. The implementation of the new subset of functionalities must be checked and approved by the customer before adding the next subset. This can also be called  the “staircase model”.
+
+\par As a result, each partial functionality can be checked in each interaction and developers will be able to obtain feedback for developing additional requirements in the next increment. Also, if there are changes made during the development system development, developers are able to response to these changes rapidly.
 
 \begin{figure}[htb]
 \centering
 \includegraphics[width=.5\textwidth]{section02/assets/IncrementalModel.png}
-\caption[Short Caption 2]{\label{IncrmentalModel}Graphical Illustration of Incremental Prototyping Model}
+\caption[Graphical Illustration of Incremental Prototyping Model]{\label{IncrmentalModel}Graphical Illustration of Incremental Prototyping Model}
 \end{figure}
 
 \par Each increment includes the completion of several functional requirements. The major consideration to determining which functionalities should be included in the earlier seven increments is according to their importance and their contribution to the entire system development.
-\par Functionalities concerning image recognition procedure  and image perspective should have a higher priority than others. The increments that occurred in this project are listed below:
+\par Functionalities concerning image recognition procedure  and image processing should have a higher priority than others. The increments that occurred in this project are listed below:
 \begin{itemize}
 \item Increment 1: Graphical User Interface functionalities related to basic user interaction.
 \item Increment 2: Image recognition's functionalities related to application interaction.
@@ -32,30 +33,31 @@
 
 %openCV, bmob
 \subsection{Overview} 
+\label{RequirementsOverview}
 \paragraph{}
-The Gift Box Project was conceived by Dr. Hunt from the the very popular game Pokemon Go. For this project, Dr. Hunt served as the supervisor.
+The Gift Box Project was conceived by Dr. Hunt inspired by the very popular game Pokemon Go. For this project, Dr. Hunt served as the supervisor and the sponsor.
 \par The supervisor met with the developer several times to gather informal functional requirements of this program. These informal functional requirements helped to define the scope of the program as well as capture the true nature and purpose of the application. During the first of these informal meetings, the supervisor provided samples of the processed pictures with a wall-hanging and identified how to select a region. Based on the information collected from these meetings, the requirement document version 1.0 was created, in which the following requirements were listed:
 \begin{itemize}
 \item This project will support users with both a web interface and an Android application.
 \item The virtual object sent by a user can be selected from the application or created by users. 
 \item The attached object will fit the shape of the region chosen by user.
-\item The navigation help users to find the gift can only support 2D locations. 
-\item The image recognition will support image transformation including rotation, re-sizing and perspective removal
+\item Navigation helps users to find the gift can only support 2D locations. 
+\item The application will support image transformation including rotation, re-sizing and perspective removal
 \item The algorithm will show a better result on images with strong features
 \end{itemize}
-\par The project initially included the development of the image comparator. However, the scope of the image comparator was too large and imposed too much complexity on the developer. To address this complexity, the developer, with assistance from Dr. Hunt, decided to use third-party software packages which would be able to perform the functionalities of image recognition. A software package was chosen depending on the required features. The scope of the program was therefore appropriately reduced by using the third-party software for the complex image recognition.
+\par The project initially included the development of the image comparator which include image recognition and image transformation algorithms. However, the scope of the image comparator was too large and imposed too much complexity on the developer. To address this complexity, the developer, with assistance from Dr. Hunt, decided to use third-party software packages which would be able to perform the functionalities of image recognition. A software package was chosen depending on the required features. The scope of the program was therefore appropriately reduced by using the third-party software for the complex image recognition.
 \par The detailed functional requirements are described in Section \ref{FunctionalRequirements} Functional Requirements. 
 
 \subsection{Functional Requirements}
 \label{FunctionalRequirements}
 \paragraph{}
-This program leaves an administrator user type but it only supports one role, the System User for Android Application. Figure \ref{Use Cases Diagram} gives a Use Case diagram for the System User.
+This program only supports one role, the System User for Android Application. Figure \ref{Use Cases Diagram} gives a Use Case diagram for the System User.
 \par As shown in the Figure \ref{Use Cases Diagram}, there are eight use cases in the diagram. Each use case describes a functional requirement. These functional requirements are narrated as follows:
 
 \begin{figure}[htb]
 \centering
 \includegraphics[width=.5\textwidth]{section02/assets/UseCase.png}
-\caption[Short Caption 2]{\label{Use Cases Diagram}Use Case Diagram for Android}
+\caption[Use Case Diagram for Android Application]{\label{Use Cases Diagram}Use Case Diagram for Android Application}
 \end{figure}
 
 \begin{itemize}
@@ -68,4 +70,4 @@ This program leaves an administrator user type but it only supports one role, th
 \item The 'View Gifts' function allows users to view their gifts. Gifts are filtered based on 'Sent' or 'Received'.
 \item The 'Send Gifts' function allows users to send virtual gifts to other users.
 \end{itemize}
-\par The web interface contains the same functionalities with Android application except 'Send Gifts' and it won't be able to view the not found gifts either.
+\par The web interface contains the same functionalities as the Android application except for 'Send Gifts' and it doesn't display the not found gifts either.
