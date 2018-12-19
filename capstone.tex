@@ -1,6 +1,6 @@
 \documentclass[letterpaper,12pt]{report}
 \usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry}
-\usepackage{fancyhdr,tocloft,natbib,url,graphicx,float,listings,sidecap,wrapfig,setspace,subcaption,listings}
+\usepackage{fancyhdr,tocloft,natbib,url,graphicx,float,listings,sidecap,wrapfig,setspace,subcaption}
 \usepackage[font=small,labelfont=bf,labelsep=period]{caption}
 \usepackage{tabularx}
 \usepackage{setspace}
@@ -23,6 +23,7 @@
 	pdfborder={0 0 0},
 }
 
+%%\renewcommand\lstlistlistingname{List of Listings}
 \setcounter{secnumdepth}{3}
 \renewcommand*\thesection{\arabic{section}.}
 \renewcommand*\thesubsection{\thesection \arabic{subsection}.}
@@ -31,12 +32,14 @@
 \setcounter{tocdepth}{3}
 \renewcommand\contentsname{}				% TOC title
 \renewcommand\listfigurename{}				% LOF title
+\renewcommand\lstlistlistingname{}
 \renewcommand\listtablename{}				% LOT title
 \renewcommand{\baselinestretch}{1.5}
 \setlength\cftaftertoctitleskip{-0.5in}
 \setlength\cftafterloftitleskip{-0.5in}
 \setlength\cftafterlottitleskip{-0.5in}
 
+\def\bsq#1{\lq{#1}\rq}
 \renewcommand\bibsection{\section{References}}
 
 \begin{document}
@@ -58,9 +61,9 @@
 %% ABSTRACT
 \section*{Abstract}
 \addcontentsline{toc}{section}{Abstract}
-Siyan Ding, "Giftbox:  An Exploration of Augmented Reality", Master of Software Engineering, December 2018, (Kenny Hunt, Ph.D.). \\
+Siyan Ding, ``Giftbox:  An Exploration of Augmented Reality'', Master of Software Engineering, December 2018, (Kenny Hunt, Ph.D.). \\
 
-This manuscript describes the development of an android application and a web interface. The Android application will allow users to attach virtual messages or objects at specific places in the real world. Virtual entities will be viewable and recoverable only by those individuals that the user selects. Recipients can only see the gifts when scanning the exact scene from which the virtual message was sent. The web interface will allow users to view their basic information and have an overview before they download the Android application.
+This manuscript describes the development of an Android application and a web interface.  The requirements gathering, design, implementation and testing phases are outlined. The Android application will allow users to attach virtual objects, or gifts, at specific locations in the real world. Virtual entities will be viewable and recoverable only by those individuals that the user selects. Recipients can only see the gifts when scanning the exact scene from which the virtual message was sent. The web interface will allow users to view their personal data and have an overview of the application before they download the Android application.
 \clearpage
 
 %%% ACKNOWLEDGEMENTS
@@ -75,16 +78,20 @@ I would like to express my sincere appreciation to my project advisor Dr. Kenny 
 \clearpage
 
 
-%% LIST OF TABLES
-\section*{List of Tables}
-\addcontentsline{toc}{section}{List of Tables}
-\listoftables
-\clearpage
-
 %% LIST OF FIGURES
 \section*{List of Figures}
 \addcontentsline{toc}{section}{List of Figures}
 \listoffigures
+\clearpage
+
+%% LIST OF LSTLISTINGS
+\section*{List of Listings}
+\addcontentsline{toc}{section}{List of Listings}
+\vspace{-1in}
+\begingroup
+\let\clearpage\relax
+\lstlistoflistings
+\endgroup
 \clearpage
 
 %% GLOSSARY
