@@ -15,7 +15,7 @@ Another reason to choose Bmob is it supports a well-designed REST API interface 
 
 
 \begin{itemize}
-\item The \bsq{User} table will save all the user information. In this table username and email will be unique for each user and this will be verified when users are registered.
+\item The \bsq{User} table will save all the user information. In this table username and email will be unique for each user and users will receive an email after they registered.
 \item The \bsq{Friend} table is for saving all friends pairs and both \bsq{user} and \bsq{friend} columns are usernames from \bsq{User} table.
 \item The \bsq{Gift} table saves all the gifts information. The \bsq{user} column records the user who sent the gift. The \bsq{recipient} column records the user who will receive the gift. The \bsq{status} column is a Boolean type data meaning the gift is found if it is \bsq{true}. The \bsq{coordinate} column is designed to hold the location where the gift was sent. The \bsq{background} column is designed to hold the region picture. The \bsq{points} column is a string designed to hold the four corners selected by users, it has eight numbers separated by space which means four Xs and four Ys like (x1,y1),(x2,y2) will be saved as \bsq{x1 y1 x2 y2}.
 \end{itemize}

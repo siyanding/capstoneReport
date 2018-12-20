@@ -135,7 +135,7 @@ When a user receives a gift, they must go to the GPS coordinates attached to the
 \par Figure \ref{RegionRecognitionExample} Region Recognition Example shows an example for finding a known object. The book on the left hand side is the object we want to find in the right hand side image. The circles are the keypoints found in both pictures, the lines connect matches found between both images based on the detected keypoints. The green rectangle shows the detected object.
 \par Before we begin to detect image features, we need to have a pre-process to call the camera so that we can get each frame to be compared. This will be introduced in Section \ref{CallCamera} Call Camera. The steps and corresponding code to recognize region are listed below:
 \begin{enumerate}
-\item[1)] Detect the keypoints using {\ttfamily AKAZE} Detector. {\ttfamily AKAZE} is a novel and fast multiscale feature detection and description approach that exploits the benefits of nonlinear scale spaces.\cite{alcantarilla2011fast} This piece of code put the \bsq{\ttfamily ProcessedCamera} image keypoints into \bsq{\ttfamily cameraKeypoints}. \bsq{\ttfamily FeatureDetector} is an OpenCv class used to generate different feature detectors. \bsq{\ttfamily MatOfKeyPoint} is a matrix used to save keypoints.
+\item[1)] Detect the keypoints using {\ttfamily AKAZE} detector. {\ttfamily AKAZE} is a novel and fast multiscale feature detection and description approach that exploits the benefits of nonlinear scale spaces.\cite{alcantarilla2011fast} This piece of code put the \bsq{\ttfamily ProcessedCamera} image keypoints into \bsq{\ttfamily cameraKeypoints}. \bsq{\ttfamily FeatureDetector} is an OpenCv class used to generate different feature detectors. \bsq{\ttfamily MatOfKeyPoint} is a matrix used to save keypoints.
 
 \begin{lstlisting}[caption={Detect the Keypoints},language={java},
         numbers=left,basicstyle=\footnotesize\ttfamily,breaklines=true,xleftmargin=.05\textwidth, xrightmargin=.05\textwidth]
@@ -372,7 +372,7 @@ public void onResume() {
 \end{lstlisting}
 \end{enumerate}
 \subsection{Web Interface}
-\paragraph{} The Bmob online database manages user authentication.  Web APIs typically use cookies to store session tokens, but Bmob delivers sesstion tokens to clients via JSON as part of the authentication process.  Our application caches this session token for use throughout the application and delivers the token to Bmob with every subsequent API call after authentication.  
+\paragraph{} The Bmob online database manages user authentication.  Web APIs typically use cookies to store session tokens, but Bmob delivers session tokens to clients via JSON as part of the authentication process.  Our application caches this session token for use throughout the application and delivers the token to Bmob with every subsequent API call after authentication.  
 \par Since the session token is not stored as a cookie, there is no need to use CSRF tokens to prevent cross-site scripting attacks. The application is currently insecure as we use HTTP requests to transfer credentials and session tokens to Bmob.  This vulnerability can be fixed by using HTTPS so that all communication with Bmob and with our own Tomcat server will be encrypted. 
 \subsection{Conclusion}
 \paragraph{} 
